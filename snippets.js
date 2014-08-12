@@ -98,6 +98,11 @@ function validateEmail(email) {
 
 /**
   Animate the color of a DOM element for a period of time.
+
+  Usage:
+  var moreButton = document.getElementById('moreButton');
+  highlight(moreButton);
+
 **/
 function animate(opts, elem) {
   var start = new Date  
