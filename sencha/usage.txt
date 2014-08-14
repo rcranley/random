@@ -1,0 +1,239 @@
+/**
+  Lockable Carousel
+**/
+var carousel = Ext.create('AutoAP.LockableCarousel',{
+                itemId: 'mylockablecarousel',
+                fullscreen: true,
+                hidden: false,
+                items: [
+                    {
+                        xtype : 'titlebar',
+                        docked : 'top',
+                        title : "My Images",
+                        items: []
+                    },
+                    {
+                        xtype: 'toolbar',
+                        docked: 'bottom',
+                        name: 'imagesToolbar',
+                        itemId: 'imagesToolbar',
+                        layout: {
+                            type: 'hbox',
+                            align: 'stretch',
+                            pack: 'center'
+                        },
+                        items: [
+                            {
+                                xtype:'button',
+                                align:'center',
+                                ui:'normal',
+                                width: 80,
+                                itemId: 'btnPrev',
+                                text:'Previous',
+                                handler: function(btn) {
+                                    this.up("carousel").previous();  
+                                    var car = Ext.ComponentQuery.query("#mylockablecarousel")[0];
+                                    var idx = car.innerItems.indexOf(car.getActiveItem());
+
+                                    if(idx <= 1){
+                                        this.disable();
+                                    }
+                                    Ext.ComponentQuery.query("#btnNext")[0].enable();
+                                }
+                            }, 
+                            {
+                                xtype: 'spacer'
+                            },
+                            {
+                                xtype:'button',
+                                align:'center',
+                                ui:'normal',
+                                text:'Close',
+                                handler: function() {
+                                    this.up("carousel").destroy();
+                                }
+                            }, 
+                            {
+                                xtype: 'spacer'
+                            },
+                            {
+                                xtype:'button',
+                                align:'center',
+                                ui:'normal',
+                                width: 80,
+                                itemId: 'btnNext',
+                                text:'Next',
+                                handler: function(btn) {
+                                    this.up("carousel").next();  
+                                    var car = Ext.ComponentQuery.query("#mylockablecarousel")[0];
+                                    var idx = car.innerItems.indexOf(car.getActiveItem());
+
+                                    if(idx >= car.innerItems.length -2){
+                                        this.disable();
+                                    }
+                                    Ext.ComponentQuery.query("#btnPrev")[0].enable();
+                                }
+                            }
+                        ]
+                    }
+                ]                 
+            });
+
+/**
+  Image Viewer (Continued on from the Carousel code above)
+**/
+
+Ext.getStore("Images").each(function(image, index){
+                    var imgURL = "";
+                    if(image.get("url").substring(0,4) == "http"){
+                        imgURL = image.get("url")
+                    }else{
+                        imgURL = "http://www.ronancranley.com/"+image.get("url")
+                    }
+                    carousel.add({
+                        xtype: "imageviewer",
+                        imageSrc: imgURL, 
+                        style: {backgroundColor: '#000000'}
+                    });
+                    if(event.event.target.src == imgURL){
+                        moveTo = index;
+                    }
+                });
+
+
+/**
+  Writer
+**/
+
+Ext.define('rcranley.model.User', {
+    extend: 'Ext.data.Model',
+    config: {
+        fields: [
+            {
+                name: 'id'
+            },
+            {
+                name: 'uuid'
+            },
+            {
+                name: 'password',
+                type: 'string',
+                persist: false
+            },
+            {
+                name: 'email',
+                type: 'email',
+                mapping: 'primaryEmail'
+            },
+            {
+                name: 'firstName',
+                type: 'string'
+            },
+            {
+                name: 'lastName',
+                type: 'string'
+            }
+                   
+        ],
+        validations: [
+            {
+                type: 'presence',
+                field: 'email',
+                message: 'Email <i>missing</i>'
+            },
+            {
+               type: 'email',
+               field: 'email',
+               message: 'Email <i>format is invalid</i>'
+            },
+            {
+                type: 'presence',
+                field: 'password',
+                message: 'Password <i>missing</i>'
+            },
+            {
+                type: 'length', // Checks length of Password
+                message: 'Password <i>must contain min 6 characters</i>',
+                field: 'password',
+                min: 6
+            },
+            {
+                type: 'presence',
+                field: 'firstName',
+                message: 'First Name <i>missing</i>'
+            }
+        ],
+        proxy: {
+            type: 'rest',
+            url: "https://api.testurl.com/user",
+            appendId: false,
+            reader: {
+                type: 'json'
+            },
+            writer: {
+                type: 'json', 
+                nameProperty: 'mapping',
+                writeAllFields: true
+            }
+        }
+    }
+
+});
+
+
+/**
+  Multiselect Field
+**/
+
+Ext.define('rcranley.view.addressPicker', {
+    extend: 'Ext.form.Panel',
+    xtype: 'addresspicker',
+    config: {
+        title:'Choose Location',
+        items: [
+        {
+            xtype: 'fieldset',
+            items: [
+            {
+                xtype: 'fieldset',
+                title:'Address',
+                margin: 0,
+                items: [
+                {
+                    xtype: 'multiselectfield',
+                    label: 'Countries',
+                    labelWidth:'45%',
+                    displayField: 'desc',
+                    store: 'Countries',
+                    name:'countries',
+                    id:'countries',
+                    valueField: 'id',
+                    value: 'None'
+                },
+                {
+                    xtype: 'multiselectfield',
+                    labelWidth:'45%',
+                    label: 'States/Provinces',
+                    displayField: 'desc',
+                    store: 'state_prov',
+                    name:'states_prov',
+                    id:'states_prov',
+                    valueField: 'id'
+                },
+
+                {
+                    xtype: 'button',
+                    margin: 5,
+                    name: 'sellsubmit',
+                    ui: 'decline',
+                    text: 'Save & Submit'
+                }
+
+                ]
+            }
+            ]
+        }
+        ]
+    }
+});
+
